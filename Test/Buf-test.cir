@@ -1,0 +1,16 @@
+*Buffer Testing
+
+.INCLUDE ../Library/Linkwitz-Riley.lib
+
+***Input***
+Vin 1 0 ac 1
+
+***Filters***
+X1 1 2 0 LR-BUF PARAMS: f0 = 3.7
+
+***Loads***
+Rload 2 0 1meg
+
+.AC dec 100 10 50k
+.PROBE V(1) V(2)
+.END

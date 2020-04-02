@@ -1,0 +1,192 @@
+*Linkwitz-Riley Crossovers
+
+.INCLUDE ./UA741-simplified.lib
+.INCLUDE ./Ideal_Switch.lib
+
+
+
+
+***2nd Order LR Crossover***
+
+***LR2 Highpass***
+.SUBCKT LR2-H in out gnd PARAMS: C = 0.1u f0 = 1k
+	C1 in 1 {C}
+	C2 1 2 {C}
+	R1 1 out {1/C/2/pi/f0}
+	R2 2 gnd {1/C/2/pi/f0}
+	XOA out 2 out gnd UA741
+.ENDS
+
+***LR2 Lowpass Filter***
+.SUBCKT LR2-L in out gnd PARAMS: C = 0.1u f0 = 1k
+	R1 in 1 {1/C/2/pi/f0}
+	R2 1 2 {1/C/2/pi/f0}
+	C1 1 out {C}
+	C2 2 gnd {C}
+	XOA out 2 out gnd UA741
+.ENDS
+
+***LR2 Xover***
+.SUBCKT LR2 in  gnd HP2 LP2 PARAMS: C = 0.1u f0 = 1k
+	Xhp2 in HP2 gnd LR2-H PARAMS: C = {C} f0 = {f0}
+	Xlp2 in LP2 gnd LR2-L PARAMS: C = {C} f0 = {f0}
+.ENDS
+
+
+***4th Order LR Crossover***
+
+***LR4 Highpass***
+.SUBCKT LR4-H in out gnd PARAMS: C = 0.1u f0 = 1k
+	C1 in 1 {C}
+	C2 1 2 {C}
+	R1 1 out {1/C/2/pi/f0/sqrt(2)}
+	R2 2 gnd {2/C/2/pi/f0/sqrt(2)}
+	XOA out 2 out gnd UA741
+.ENDS
+
+***LR4 Lowpass Filter***
+.SUBCKT LR4-L in out gnd PARAMS: C = 0.1u f0 = 1k
+	R1 in 1 {1/C/2/pi/f0/sqrt(2)}
+	R2 1 2 {1/C/2/pi/f0/sqrt(2)}
+	C1 1 out {2*C}
+	C2 2 gnd {C}
+	XOA out 2 out gnd UA741
+.ENDS
+
+***LR4 Xover***
+.SUBCKT LR4 in  gnd HP4 LP4 PARAMS: C = 0.1u f0 = 1k
+	Xhp1 in HP2 gnd LR4-H PARAMS: C = {C} f0 = {f0}
+	Xlp1 in LP2 gnd LR4-L PARAMS: C = {C} f0 = {f0}
+	Xhp2 HP2 HP4 gnd LR4-H PARAMS: C = {C} f0 = {f0}
+	Xlp2 LP2 LP4 gnd LR4-L PARAMS: C = {C} f0 = {f0}
+.ENDS
+
+
+
+
+***EQ Circuits for Driver/Room Correction***
+
+***Buffer***
+.SUBCKT LR-BUF in out gnd PARAMS: f0 = 7.4 C = 1u
+	*21.5k resistor and 1uF cap to acheive dc blocking well below audible range
+	C1 in 1 {C}
+	R1 1 gnd {1/2/pi/f0/C}
+	XOA out 1 out gnd UA741
+.ENDS
+
+***Delay Comp (-180 at HF)***
+.SUBCKT LR-D1 in out gnd PARAMS: R = 2.37k f0 = 2487 Switch = 1 Ccutoff = 220p
+	*Switch = 0 for no High Frequency cuttoff above 20k
+	*Ccutoff = 1/(2piR*305245 Hz) = 220pF to get roll off above 20k
+	R1 in 1 {R}
+	C1 1 gnd {1/2/pi/R/f0}
+	R2 in 2 {R}
+	R3 2 out {R}
+	Xsw 2 3 IdealVSw PARAMS: ONoff = {Switch}
+	C2 3 out {Ccutoff}
+	XOA 2 1 out gnd UA741
+.ENDS
+
+***Delay Comp (+180 at LF)***
+.SUBCKT LR-D2 in out gnd PARAMS: R = 2.37k f0 = 2487 Switch = 1 Ccutoff = 220p
+	*Switch is useless in this one
+	R1 1 gnd {R}
+	C1 in 1 {1/2/pi/R/f0}
+	R2 in 2 {R}
+	R3 2 out {R}
+	Xsw 2 3 IdealVSw PARAMS: ONoff = {Switch}
+	C2 3 out {Ccutoff}
+	XOA 2 1 out gnd UA741
+.ENDS
+
+
+
+***Shelving Lowpass (Non-Inv)***
+.SUBCKT LR-SLPnon in out gnd PARAMS: g1 = 1.414 r1 = 2.37k f1 = 1k rIn = 10k
+	Rin in gnd {rIn}
+	R1 1 gnd {r1}
+	R2 1 out {(g1-1)*r1}
+	C1 1 out {1/2/pi/f1/r1/(g1-1)}
+	XOA 1 in out gnd UA741
+.ENDS
+
+***Shelving Lowpass (Inv)***
+.SUBCKT LR-SLPinv in out gnd PARAMS: g1 = 1.414 g2 = 1 r1 = 2.37k f1 = 1k Switch = 1 Ccutoff = 220p
+	R1 in 1 {r1}
+	R2 1 out {g1*r1}
+	R3 1 2 {g1*g2*r1/(g1-g2)}
+	C1 2 out {(g1-g2)/2/pi/g1/g1/r1/f1}
+	Xsw 1 3 IdealVSw PARAMS: ONoff = {Switch}
+	C2 3 out {Ccutoff}
+	XOA 1 gnd out gnd UA741
+.ENDS
+
+***Shelving Highpass (Non-Inv)***
+.SUBCKT LR-SHPnon in out gnd PARAMS: g2 = 1.414 r2 = 2.37k f2 = 1k rIn = 10k Switch = 1 Ccutoff = 220p
+	Rin in gnd {rIn}
+	R1 1 2 {r2/(g2-1)}
+	C1 2 gnd {(g2-1)/2/pi/f2/r2}
+	R2 1 out {r2}
+	Xsw 1 3 IdealVSw PARAMS: ONoff = {Switch}
+	C2 3 out {Ccutoff}
+	XOA 1 in out gnd UA741
+.ENDS
+
+***Shelving Highpass (Inv)***
+.SUBCKT LR-SHPinv in out gnd PARAMS: g2 = 1.414 g1 = 1 r1 = 2.37k f2 = 1k Switch = 1 Ccutoff = 220p
+	R1 in 1 {r1}
+	R2 1 out {g1*r1}
+	R3 in 2 {g1*r1/(g2-g1)}
+	C1 2 1 {(g2-g1)/2/pi/f2/g1/r1}
+	Xsw 1 3 IdealVSw PARAMS: ONoff = {Switch}
+	C2 3 out {Ccutoff}
+	XOA 1 gnd out gnd UA741
+.ENDS
+
+***Notch Filter 1***
+.SUBCKT LR-NTC1 in out gnd PARAMS: R1 = 5.11k a = 12.8 f0 = 291 Q = 3
+	*Traditional, but impractical
+	.PARAM R = {R1/(pow(10,a/20)-1)}
+	.PARAM L = {R*Q/2/pi/f0}
+	R1 in out {R1}
+	C1 out 1 {1/2/2/pi/pi/f0/f0/L}
+	L1 1 2 {L}
+	R3 2 gnd {R}
+.ENDS
+
+***Notch Filter 2***
+.SUBCKT LR-NTC2 in out gnd PARAMS: R1 = 5.11k a = 12.8 f0 = 291 Q = 3
+	*Helps Remove Dipole Response
+	*Need to adjust for actual dB reduction
+	*0.35 dB removed from high side of filter @ a = 12.8
+	.PARAM R = {R1/(pow(10,a/20)-1)}
+	.PARAM L = {R*Q/2/pi/f0}
+	.PARAM X = {2*pi*f0*L}
+	R1 in out {R1}
+	R2 out 1 {2*R/3}
+	C1 1 2 {1/2/2/pi/pi/f0/f0/L}
+	R3 2 4 {R/3}
+	C2 2 3 {3*L/R/(10*Q*X-R/3)}
+	XOA 4 3 4 gnd UA741
+	R4 3 gnd {10*Q*X}
+.ENDS
+
+***Notch Filter 3***
+.SUBCKT LR-NTC3 in out gnd PARAMS: R1 = 5.11k a = 12.8 f0 = 291 Q = 3
+	*Helps Remove Room EQ
+	.PARAM R = {R1/(pow(10,a/20)-1)}
+	.PARAM L = {R*Q/2/pi/f0}
+	R1 in out {R1}
+	R2 out 1 {R/3}
+	C1 1 2 {1/2/2/pi/pi/f0/f0/L}
+	R3 2 3 {R/3}
+	C2 3 4 {9*L/R/R}
+	XOA 4 2 4 gnd UA741
+	R4 3 gnd {R/3}
+.ENDS
+
+***Dipole EQ 1***
+*Use LR-SLPinv
+
+***Dipole EQ 2***
+

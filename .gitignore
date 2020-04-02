@@ -1,0 +1,9 @@
+# ignore Log file
+*.log
+
+# ignore Data files
+*.dat
+*.raw
+
+# include lib files
+!*.lib

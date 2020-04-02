@@ -1,0 +1,52 @@
+*Sallen-Key Filters
+
+.INCLUDE ./UA741-simplified.lib
+.INCLUDE ./Potentiometer.lib
+
+***Band Pass***
+.SUBCKT sk_bp in out gnd PARAMS: C = 1uf w0 = 1k Q = 0.707
+	R1 in 2 {1/C/w0}
+	R2 2 out {1/C/w0}
+	C1 2 3 {C}
+	C2 2 gnd {C}
+	R3 3 gnd {2/C/w0}
+	XOA 5 3 out gnd UA741
+	R4 5 gnd 10k
+	R5 out 5 {(2-1/Q)*10k}
+.ENDS
+
+***High Pass***
+.SUBCKT sk_lp in out gnd PARAMS: C = 1uf w0 = 1k Q = 0.707
+	R1 in 2 {1/C/w0}
+	R2 2 3 {1/C/w0}
+	C1 3 gnd {C}
+	C2 2 out {C}
+	XOA 5 3 out gnd UA741
+	R3 5 gnd 10k
+	R4 out 5 {(2-1/Q)*10k}
+.ENDS
+
+***Low Pass***
+.SUBCKT sk_hp in out gnd PARAMS: C = 1uf w0 = 1k Q = 0.707
+	R1 3 gnd {1/C/w0}
+	R2 2 out {1/C/w0}
+	C1 in 2 {C}
+	C2 2 3 {C}
+	XOA 5 3 out gnd UA741
+	R4 5 gnd 10k
+	R5 out 5 {(2-1/Q)*10k}
+.ENDS
+
+***Variable Low Pass***
+.SUBCKT sk_lp_var in out gnd PARAMS: C = 1uf w0 = 1k Q = 0.707 f = 1 Rvar = 25k Rq = 25k Qv = 1
+	R1 in 2 {1/C/w0}
+	XR2 2 3 3 pot PARAMS: R = {Rvar} g = {f}
+	R3 3 4 {1/C/w0}
+	XR4 4 5 5 pot PARAMS: R = {Rvar} g = {f}
+	C1 4 gnd {C}
+	C2 3 out {C}
+	XOA 6 5 out gnd UA741
+	R5 6 gnd 10k
+	XR6 out 7 7 pot PARAMS: g = {Qv} R = {Rq}
+	R7 7 6 {(2-1/Q)*10k}
+.ENDS

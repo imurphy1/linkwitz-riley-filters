@@ -1,0 +1,43 @@
+Xover Filter Design
+
+********************************
+* Two-way Speaker Crossover
+* Tweeter and Woofer
+*
+* Need to calc all values
+*
+*
+********************************
+
+
+
+.INCLUDE ../Library/Linkwitz-Riley.lib
+.INCLUDE ../Library/PA165-8.lib
+.INCLUDE ../Library/ND25FA-4.lib
+
+
+
+***Parameters***
+	.param Hf = 2275
+	.param Lf = 150
+
+
+***Input***
+	Vin 1 0 ac 1
+
+
+***Xover***
+	XLR4 1 0 HP4 LP4 LR4 PARAMS: C = 1u f0 = {Hf}
+
+
+***Loads***
+	rLoad HP4 0 500k
+	rLoad1 LP4 0 500k
+
+***Speaker Sim***
+	Xwoofer LP4 0 woofer 0 PA165-8
+	Xtweeter HP4 0 tweeter 0 ND25FA-4
+
+.ac dec 100 10 20k
+.probe V(HP4) V(LP4) V(woofer) V(tweeter)
+.end

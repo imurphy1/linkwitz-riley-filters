@@ -1,0 +1,12 @@
+*Simple UA741 Op Amp
+
+.SUBCKT UA741 inv non out gnd
+
+	rIn non inv 1g
+	e1 op1 gnd non inv 100k
+	r2 op1 op2 1k
+	c3 op2 gnd 1.59n
+	eBuff op3 gnd op2 gnd 1
+	rOut op3 out 100
+
+.ENDS

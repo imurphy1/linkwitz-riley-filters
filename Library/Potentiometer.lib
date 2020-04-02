@@ -1,0 +1,19 @@
+***Potentiometer***
+
+.SUBCKT pot 1 2 tap PARAMS: R = 10k g = 1
+	R1 1 tap {R*(1-g)+1n}
+	R2 tap 2 {R*g+1n}
+.ENDS
+
+.SUBCKT pot_log 1 2 tap PARAMS: R = 10k g = 1
+	R1 1 tap {R*(1-g)+1n}
+	R2 tap 2 {R*g+1n}
+	R3 tap 2 {R*0.15}
+.ENDS
+
+.SUBCKT pot_logIdeal 1 2 tap PARAMS: R = 10k g = 1 ym = 0.1
+	.PARAM b = {pow((1/ym - 1),2)}
+	.PARAM g1 = {pow(b,g)/(b-1)-1/(b-1)}
+	R1 1 tap {R*(1-g1)+1n}
+	R2 tap 2 {R*g1+1n}
+.ENDS

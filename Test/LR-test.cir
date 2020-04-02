@@ -1,0 +1,20 @@
+*Linkwitz-Riley Filters
+
+.INCLUDE ../Library/Linkwitz-Riley.lib
+
+***Input***
+Vin 1 0 ac 1
+
+***Filters***
+XLR2 1 0 HP2 LP2 LR2 PARAMS: C = 1u w0 = {1000*2*pi}
+XLR4 1 0 HP4 LP4 LR4 PARAMS: C = 1u w0 = {1000*2*pi}
+
+***Loads***
+Rload0 HP2 0 1meg
+Rload1 LP2 0 1meg
+Rload2 HP4 0 1meg
+Rload3 LP4 0 1meg
+
+.AC dec 100 10 50k
+.PROBE V(1) V(HP2) V(LP2) V(HP4) V(LP4)
+.END

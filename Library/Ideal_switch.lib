@@ -1,0 +1,8 @@
+*Ideal Switch Model
+
+.SUBCKT IdealVSw in out PARAMS: ONoff = 0
+	S1 in out 1 0 VSW
+	Vswitch 1 0 {ONoff}
+.ENDS
+
+.MODEL VSW VSWITCH()
